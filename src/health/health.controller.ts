@@ -2,9 +2,10 @@ import { Controller, Get, HttpStatus } from '@nestjs/common';
 import { HealthCheckService } from '@nestjs/terminus';
 import { MemoryHealthIndicator } from './indicators/memory.health';
 import { DatabaseHealthIndicator } from './indicators/database.health';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { ResponseMapper } from '@/shared/mappers/response.map';
 import { CommonService } from '@/shared/services/common.service';
+import { Public } from '@/shared/decorators/public.decorator';
 
 @ApiTags('Health')
 @Controller('/api/health')
@@ -17,7 +18,7 @@ export class HealthController {
 	) {}
 
 	@Get()
-	@ApiBearerAuth('access-token')
+	@Public()
 	async checkHealthHandler() {
 		const response = await this.health.check([
 			() => this.memoryIndicator.isHealthy('memory'),

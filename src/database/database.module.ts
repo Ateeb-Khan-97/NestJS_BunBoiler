@@ -15,7 +15,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 				synchronize: !isProduction, // false for production else production data can be loss
 				logging: !isProduction,
 				entities: [`${__dirname}/../**/*.entity{.ts,.js}`],
-				ssl: isProduction ? { rejectUnauthorized: false } : false,
+				// ssl: isProduction ? { rejectUnauthorized: false } : false,
 			}),
 		}),
 	],

@@ -8,6 +8,7 @@ import { SwaggerModule } from '@nestjs/swagger';
 import { SwaggerConfig, SwaggerOptions } from './config/swagger.config';
 import { ResponseInterceptor } from './shared/interceptors/response.interceptor';
 import { LoggerInterceptor } from './shared/interceptors/logger.interceptor';
+import { GlobalExceptionFilter } from './shared/filters/exception.filter';
 
 async function bootstrap() {
 	const logger = new Logger('NestFactory');
@@ -15,6 +16,7 @@ async function bootstrap() {
 
 	app.enableCors();
 	app.useGlobalPipes(new ValidationPipe());
+	app.useGlobalFilters(new GlobalExceptionFilter());
 	app.useGlobalInterceptors(new ResponseInterceptor(), new LoggerInterceptor());
 
 	app.use(helmet());
