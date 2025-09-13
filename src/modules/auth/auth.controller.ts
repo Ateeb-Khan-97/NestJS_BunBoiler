@@ -6,14 +6,17 @@ import {
 	Logger,
 	Body,
 	Post,
+	UnauthorizedException,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Public } from '@/shared/decorators/public.decorator';
 import { SigninDto, SignupDto } from './dto/auth.dto';
 import { RefreshAccessDto } from './dto/refresh.dto';
 import { ResponseMapper } from '@/shared/mappers/response.map';
 import { UserService } from '../users/user.service';
 import { CommonService } from '@/shared/services/common.service';
+import { AuthService } from './auth.service';
+import { TokenType } from './auth.enum';
 
 @ApiTags('Auth')
 @Controller('/api/auth')
@@ -22,6 +25,7 @@ export class AuthController {
 	constructor(
 		private readonly userService: UserService,
 		private readonly commonService: CommonService,
+		private readonly authService: AuthService,
 	) {}
 
 	@Public()
@@ -32,8 +36,10 @@ export class AuthController {
 		if (!(await Bun.password.verify(body.password, user.password)))
 			throw new BadRequestException('Invalid credentials');
 
+		const [accessToken, refreshToken] = await this.authService.generateAuthTokens(user.id);
 		const userWithoutPass = this.commonService.omit(user, ['password']);
-		return ResponseMapper.map({ data: userWithoutPass });
+
+		return ResponseMapper.map({ data: { user: userWithoutPass, accessToken, refreshToken } });
 	}
 
 	@Public()
@@ -59,12 +65,15 @@ export class AuthController {
 	@Public()
 	@Post('refresh-access')
 	async refreshAccessHandler(@Body() body: RefreshAccessDto) {
-		return ResponseMapper.map({ data: body });
-	}
+		const payload = await this.authService.verifyToken(body.refreshToken, TokenType.REFRESH);
+		if (!payload) throw new UnauthorizedException('Invalid refresh token');
 
-	@Post('sign-out')
-	@ApiBearerAuth('access-token')
-	async signoutHandler() {
-		return ResponseMapper.map({ message: 'Successfully signed out' });
+		const user = await this.userService.findOneBy({ id: payload.userId });
+		if (!user) throw new UnauthorizedException('Invalid refresh token');
+
+		const [accessToken, refreshToken] = await this.authService.generateAuthTokens(user.id);
+		const userWithoutPass = this.commonService.omit(user, ['password']);
+
+		return ResponseMapper.map({ data: { user: userWithoutPass, accessToken, refreshToken } });
 	}
 }
