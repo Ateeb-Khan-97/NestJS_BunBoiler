@@ -16,7 +16,7 @@ import { ResponseMapper } from '@/shared/mappers/response.map';
 import { UserService } from '../users/user.service';
 import { CommonService } from '@/shared/services/common.service';
 import { AuthService } from './auth.service';
-import { TokenType } from './auth.enum';
+import { TokenType } from '../../shared/enums/auth.enum';
 
 @ApiTags('Auth')
 @Controller('/api/auth')

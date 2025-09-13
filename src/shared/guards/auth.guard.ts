@@ -3,7 +3,7 @@ import { Injectable, UnauthorizedException, type CanActivate, type ExecutionCont
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { AuthService } from '@/modules/auth/auth.service';
-import { TokenType } from '@/modules/auth/auth.enum';
+import { TokenType } from '@/shared/enums/auth.enum';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
