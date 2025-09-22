@@ -12,7 +12,6 @@ export async function RunCluster(bootstrap: () => Promise<INestApplication<Expre
 		logger.log(`Primary ${process.pid} is running`);
 		logger.log(`Starting ${numCPUs} workers...`);
 
-		logger.log(`Starting ${numCPUs} process`);
 		for (let i = 0; i < numCPUs; i++) cluster.fork();
 
 		let restartCount = 0;
