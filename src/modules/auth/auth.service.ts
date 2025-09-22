@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { TokenType } from '../../shared/enums/auth.enum';
+import { TokenType } from '@/shared/enums/auth.enum';
 import { env } from '@/config/env.config';
 
 @Injectable()
