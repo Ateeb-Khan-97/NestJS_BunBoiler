@@ -15,6 +15,10 @@ export class CommonService {
 		}
 	}
 
+	public isEmptyObject(obj: Record<string | number | symbol, unknown>) {
+		return Object.keys(obj).length === 0;
+	}
+
 	/**
 	 * helper method to remove keys from an object
 	 * @param obj An object from which you need keys removed

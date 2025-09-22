@@ -3,12 +3,14 @@ import { NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { Logger, ValidationPipe, type INestApplication } from '@nestjs/common';
-import { env, isProduction } from './config/env.config';
+import { env } from './config/env.config';
 import { SwaggerModule } from '@nestjs/swagger';
-import { SwaggerConfig, SwaggerOptions } from './config/swagger.config';
+import { ScalarConfig, SwaggerConfig } from './config/swagger.config';
 import { ResponseInterceptor } from './shared/interceptors/response.interceptor';
 import { LoggerInterceptor } from './shared/interceptors/logger.interceptor';
 import { GlobalExceptionFilter } from './shared/filters/exception.filter';
+import { apiReference } from '@scalar/nestjs-api-reference';
+import { RunCluster } from './main.cluster';
 
 async function bootstrap() {
 	const logger = new Logger('NestFactory');
@@ -19,17 +21,16 @@ async function bootstrap() {
 	app.useGlobalFilters(new GlobalExceptionFilter());
 	app.useGlobalInterceptors(new ResponseInterceptor(), new LoggerInterceptor());
 
-	app.use(helmet());
+	app.use(helmet({ crossOriginEmbedderPolicy: false, contentSecurityPolicy: false }));
 
-	// add swagger api docs for all envs except production
-	if (!isProduction) {
-		const SwaggerFactory = SwaggerModule.createDocument(app, SwaggerConfig);
-		SwaggerModule.setup('/api/docs', app, SwaggerFactory, SwaggerOptions);
-	}
+	const SwaggerFactory = SwaggerModule.createDocument(app, SwaggerConfig);
+	app.use('/api/docs', apiReference(ScalarConfig(SwaggerFactory)));
 
-	await app.listen(env.PORT);
+	await app.listen(env.PORT, '0.0.0.0');
 	logger.log(`Application is running on: [http://localhost:${env.PORT}]`);
-	if (!isProduction) logger.log(`Swagger docs available at [http://localhost:${env.PORT}/api/docs]`);
+	logger.log(`Scalar docs available at [http://localhost:${env.PORT}/api/docs]`);
+
+	return app;
 }
 
-bootstrap();
+await RunCluster(bootstrap);

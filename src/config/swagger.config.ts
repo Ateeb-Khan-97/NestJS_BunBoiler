@@ -1,4 +1,5 @@
-import { DocumentBuilder, type SwaggerCustomOptions } from '@nestjs/swagger';
+import { DocumentBuilder, type OpenAPIObject } from '@nestjs/swagger';
+import type { NestJSReferenceConfiguration } from '@scalar/nestjs-api-reference';
 
 export const SwaggerConfig = new DocumentBuilder()
 	.setTitle('API Documentation')
@@ -17,6 +18,12 @@ export const SwaggerConfig = new DocumentBuilder()
 	)
 	.build();
 
-export const SwaggerOptions: SwaggerCustomOptions = {
-	swaggerOptions: { defaultModelsExpandDepth: -1 },
-};
+export const ScalarConfig = (document: OpenAPIObject): NestJSReferenceConfiguration => ({
+	theme: 'saturn',
+	layout: 'modern',
+	content: document,
+	hideModels: true,
+	documentDownloadType: 'none',
+	hideDarkModeToggle: true,
+	hideDownloadButton: true,
+});
