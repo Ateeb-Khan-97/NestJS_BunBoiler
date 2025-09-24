@@ -18,6 +18,7 @@
 		"typescript": "^5"
 	},
 	"dependencies": {
+		"@nestjs/axios": "^4.0.1",
 		"@nestjs/common": "^11.1.6",
 		"@nestjs/core": "^11.1.6",
 		"@nestjs/jwt": "^11.0.0",
@@ -26,6 +27,7 @@
 		"@nestjs/terminus": "^11.0.0",
 		"@nestjs/typeorm": "^11.0.0",
 		"@scalar/nestjs-api-reference": "^1.0.2",
+		"axios": "^1.12.2",
 		"class-transformer": "^0.5.1",
 		"class-validator": "^0.14.2",
 		"helmet": "^8.1.0",
