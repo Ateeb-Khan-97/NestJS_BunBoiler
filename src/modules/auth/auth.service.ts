@@ -8,13 +8,14 @@ export class AuthService {
 	constructor(private readonly jwtService: JwtService) {}
 
 	public async generateAuthTokens(userId: number) {
+		const tokenId = Bun.randomUUIDv7();
 		return Promise.all([
-			this.signPayload({ userId }, TokenType.ACCESS),
-			this.signPayload({ userId }, TokenType.REFRESH),
+			this.signPayload({ userId, tokenId }, TokenType.ACCESS),
+			this.signPayload({ userId, tokenId }, TokenType.REFRESH),
 		]);
 	}
 
-	public async signPayload(payload: { userId: number }, type: TokenType) {
+	public async signPayload(payload: { userId: number; tokenId: string }, type: TokenType) {
 		let secret: string;
 		let expiresIn: number;
 		switch (type) {
@@ -48,7 +49,10 @@ export class AuthService {
 		}
 
 		try {
-			const payload = (await this.jwtService.verifyAsync(token, { secret })) as { userId: number };
+			const payload = (await this.jwtService.verifyAsync(token, { secret })) as {
+				userId: number;
+				tokenId: string;
+			};
 			return payload;
 		} catch {
 			return undefined;
