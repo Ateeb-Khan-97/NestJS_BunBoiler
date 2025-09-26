@@ -19,7 +19,7 @@ export class UserController {
 		const user = await this.userService.findOneBy({ id: userId });
 		if (!user || user.deletedAt) throw new NotFoundException('User not found');
 
-		const userWithoutPassword = this.commonService.omit(user, ['password']);
-		return ResponseMapper.map({ data: userWithoutPassword });
+		const userWithoutPassword = this.commonService.omit(user, ['password', 'deletedAt']);
+		return ResponseMapper.map({ message: 'Profile fetched', data: userWithoutPassword });
 	}
 }

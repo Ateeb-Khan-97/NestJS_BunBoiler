@@ -22,12 +22,15 @@ export class LoggerInterceptor implements NestInterceptor {
 
 		return next.handle().pipe(
 			tap({
-				next: () => {
+				next: (res) => {
 					const endTime = Date.now();
 					const duration = endTime - startTime;
-					const statusCode = response.statusCode;
+					const statusCode = (res as { status: number }).status;
+					const message = (res as { message: string }).message;
 
-					this.logger.log(`${method} ${url} - ${statusCode} - ${duration}ms - ${ip} - ${userAgent}`);
+					this.logger.log(
+						`${method} ${url} - ${statusCode} - ${duration}ms - ${ip} - ${userAgent} - Message: ${message}`,
+					);
 				},
 				error: (error) => {
 					const endTime = Date.now();

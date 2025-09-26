@@ -37,9 +37,12 @@ export class AuthController {
 			throw new BadRequestException('Invalid credentials');
 
 		const [accessToken, refreshToken] = await this.authService.generateAuthTokens(user.id);
-		const userWithoutPass = this.commonService.omit(user, ['password']);
+		const userWithoutPass = this.commonService.omit(user, ['password', 'deletedAt']);
 
-		return ResponseMapper.map({ data: { user: userWithoutPass, accessToken, refreshToken } });
+		return ResponseMapper.map({
+			message: 'Signed in successfully',
+			data: { user: userWithoutPass, accessToken, refreshToken },
+		});
 	}
 
 	@Public()
@@ -72,8 +75,11 @@ export class AuthController {
 		if (!user) throw new UnauthorizedException('Invalid refresh token');
 
 		const [accessToken, refreshToken] = await this.authService.generateAuthTokens(user.id);
-		const userWithoutPass = this.commonService.omit(user, ['password']);
+		const userWithoutPass = this.commonService.omit(user, ['password', 'deletedAt']);
 
-		return ResponseMapper.map({ data: { user: userWithoutPass, accessToken, refreshToken } });
+		return ResponseMapper.map({
+			message: 'Session refreshed',
+			data: { user: userWithoutPass, accessToken, refreshToken },
+		});
 	}
 }
