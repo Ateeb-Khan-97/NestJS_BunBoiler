@@ -3,7 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { Logger, ValidationPipe, type INestApplication } from '@nestjs/common';
-import { env } from './config/env.config';
+import { env, isProduction } from './config/env.config';
 import { SwaggerModule } from '@nestjs/swagger';
 import { ScalarConfig, SwaggerConfig } from './config/swagger.config';
 import { ResponseInterceptor } from './shared/interceptors/response.interceptor';
@@ -23,12 +23,14 @@ async function bootstrap() {
 
 	app.use(helmet({ crossOriginEmbedderPolicy: false, contentSecurityPolicy: false }));
 
-	const SwaggerFactory = SwaggerModule.createDocument(app, SwaggerConfig);
-	app.use('/api/docs', apiReference(ScalarConfig(SwaggerFactory)));
+	if (!isProduction) {
+		const SwaggerFactory = SwaggerModule.createDocument(app, SwaggerConfig);
+		app.use('/api/docs', apiReference(ScalarConfig(SwaggerFactory)));
+	}
 
 	await app.listen(env.PORT, '0.0.0.0');
 	logger.log(`Application is running on: [http://localhost:${env.PORT}]`);
-	logger.log(`Scalar docs available at [http://localhost:${env.PORT}/api/docs]`);
+	if (!isProduction) logger.log(`Scalar docs available at [http://localhost:${env.PORT}/api/docs]`);
 
 	return app;
 }
