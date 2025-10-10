@@ -1,11 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, type JwtSignOptions, type JwtVerifyOptions } from '@nestjs/jwt';
 import { TokenType } from '@/shared/enums/auth.enum';
 import { env } from '@/config/env.config';
 
 @Injectable()
 export class AuthService {
 	constructor(private readonly jwtService: JwtService) {}
+	private readonly JWT_SECRET: Record<TokenType, string> = {
+		[TokenType.ACCESS]: env.JWT_ACCESS_SECRET,
+		[TokenType.REFRESH]: env.JWT_REFRESH_SECRET,
+	};
+	private readonly JWT_EXP: Record<TokenType, number> = {
+		[TokenType.ACCESS]: env.JWT_ACCESS_EXP,
+		[TokenType.REFRESH]: env.JWT_REFRESH_EXP,
+	};
 
 	public async generateAuthTokens(userId: number) {
 		const tokenId = Bun.randomUUIDv7();
@@ -15,45 +23,15 @@ export class AuthService {
 		]);
 	}
 
-	public async signPayload(payload: { userId: number; tokenId: string }, type: TokenType) {
-		let secret: string;
-		let expiresIn: number;
-		switch (type) {
-			case TokenType.ACCESS: {
-				secret = env.JWT_ACCESS_SECRET;
-				expiresIn = env.JWT_ACCESS_EXP;
-				break;
-			}
-			case TokenType.REFRESH: {
-				secret = env.JWT_REFRESH_SECRET;
-				expiresIn = env.JWT_REFRESH_EXP;
-				break;
-			}
-		}
-
-		const token = await this.jwtService.signAsync(payload, { secret, expiresIn });
-		return token;
+	public async signPayload(payload: { userId: number; tokenId: string }, type: TokenType): Promise<string> {
+		const options = { secret: this.JWT_SECRET[type], expiresIn: this.JWT_EXP[type] } satisfies JwtSignOptions;
+		return this.jwtService.signAsync(payload, options);
 	}
 
 	public async verifyToken(token: string, type: TokenType) {
-		let secret: string;
-		switch (type) {
-			case TokenType.ACCESS: {
-				secret = env.JWT_ACCESS_SECRET;
-				break;
-			}
-			case TokenType.REFRESH: {
-				secret = env.JWT_REFRESH_SECRET;
-				break;
-			}
-		}
-
 		try {
-			const payload = (await this.jwtService.verifyAsync(token, { secret })) as {
-				userId: number;
-				tokenId: string;
-			};
-			return payload;
+			const options = { secret: this.JWT_SECRET[type] } satisfies JwtVerifyOptions;
+			return (await this.jwtService.verifyAsync(token, options)) as { userId: number; tokenId: string };
 		} catch {
 			return undefined;
 		}

@@ -6,8 +6,9 @@
 	"scripts": {
 		"build": "bun ./scripts/build.ts",
 		"dev": "bun --watch src/main.ts",
-		"start": "bun ./dist/main.js",
-		"format": "bunx biome format --write ./src"
+		"start": "bun run build && bun ./dist/main.js",
+		"format": "bunx biome format --write ./src",
+		"lint": "bunx biome check ./src"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.2.5",
