@@ -26,4 +26,5 @@ export const ScalarConfig = (document: OpenAPIObject): NestJSReferenceConfigurat
 	documentDownloadType: 'none',
 	hideDarkModeToggle: true,
 	hideDownloadButton: true,
+	pageTitle: 'Nest.JS API Documentation',
 });

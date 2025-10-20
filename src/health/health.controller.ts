@@ -17,6 +17,12 @@ export class HealthController {
 		private readonly commonService: CommonService,
 	) {}
 
+	@Get('/readiness')
+	@Public()
+	readinessHandler() {
+		return ResponseMapper.map();
+	}
+
 	@Get()
 	@Public()
 	async checkHealthHandler() {
@@ -25,7 +31,11 @@ export class HealthController {
 			() => this.databaseIndicator.isHealthy('database'),
 		]);
 		if (!this.commonService.isEmptyObject(response.error || {}))
-			return ResponseMapper.map({ data: response.error, status: HttpStatus.SERVICE_UNAVAILABLE });
-		return ResponseMapper.map({ data: response.details });
+			return ResponseMapper.map({
+				message: 'UnHealthy',
+				data: response.error,
+				status: HttpStatus.SERVICE_UNAVAILABLE,
+			});
+		return ResponseMapper.map({ message: 'Healthy', data: response.details });
 	}
 }
