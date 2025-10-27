@@ -2,9 +2,20 @@ import { Injectable } from '@nestjs/common';
 import { JwtService, type JwtSignOptions, type JwtVerifyOptions } from '@nestjs/jwt';
 import { TokenType } from '@/shared/enums/auth.enum';
 import { env } from '@/config/env.config';
+import type { Request } from 'express';
 
 @Injectable()
 export class AuthService {
+	private readonly blockedTokens: Set<string> = new Set();
+
+	public addBlockedToken(tokenId: string): void {
+		this.blockedTokens.add(tokenId);
+	}
+
+	public isBlockedToken(tokenId: string): boolean {
+		return this.blockedTokens.has(tokenId);
+	}
+
 	constructor(private readonly jwtService: JwtService) {}
 	private readonly JWT_SECRET: Record<TokenType, string> = {
 		[TokenType.ACCESS]: env.JWT_ACCESS_SECRET,
@@ -35,5 +46,15 @@ export class AuthService {
 		} catch {
 			return undefined;
 		}
+	}
+
+	public extractTokenFromHeader(request: Request): string | undefined {
+		const [type, token] = request.headers.authorization?.split(' ') ?? [];
+		return type === 'Bearer' ? token : undefined;
+	}
+
+	public async revokeToken(token: string): Promise<void> {
+		const payload = await this.jwtService.decode(token);
+		if (payload?.tokenId) this.addBlockedToken(payload.tokenId);
 	}
 }

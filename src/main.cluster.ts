@@ -5,6 +5,7 @@ import { isProduction } from './config/env.config';
 import type { ExpressAdapter } from '@nestjs/platform-express';
 
 export async function RunCluster(bootstrap: () => Promise<INestApplication<ExpressAdapter>>) {
+	console.clear();
 	const logger = new Logger('AppCluster');
 	const numCPUs = Math.max(1, os.cpus().length - 1);
 

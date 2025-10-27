@@ -7,8 +7,9 @@ import {
 	Body,
 	Post,
 	UnauthorizedException,
+	Request,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Public } from '@/shared/decorators/public.decorator';
 import { SigninDto, SignupDto } from './dto/auth.dto';
 import { RefreshAccessDto } from './dto/refresh.dto';
@@ -17,6 +18,7 @@ import { UserService } from '../users/user.service';
 import { CommonService } from '@/shared/services/common.service';
 import { AuthService } from './auth.service';
 import { TokenType } from '../../shared/enums/auth.enum';
+import type { Request as ExpressRequest } from 'express';
 
 @ApiTags('Auth')
 @Controller('/api/auth')
@@ -70,6 +72,7 @@ export class AuthController {
 	async refreshAccessHandler(@Body() body: RefreshAccessDto) {
 		const payload = await this.authService.verifyToken(body.refreshToken, TokenType.REFRESH);
 		if (!payload) throw new UnauthorizedException('Invalid refresh token');
+		if (this.authService.isBlockedToken(payload.tokenId)) throw new UnauthorizedException('Token is blocked');
 
 		const user = await this.userService.findOneBy({ id: payload.userId });
 		if (!user) throw new UnauthorizedException('Invalid refresh token');
@@ -81,5 +84,14 @@ export class AuthController {
 			message: 'Session refreshed',
 			data: { user: userWithoutPass, accessToken, refreshToken },
 		});
+	}
+
+	@ApiBearerAuth('access-token')
+	@Post('sign-out')
+	async signoutHandler(@Request() req: ExpressRequest) {
+		const token = this.authService.extractTokenFromHeader(req);
+		if (!token) throw new UnauthorizedException('Invalid token');
+		await this.authService.revokeToken(token);
+		return ResponseMapper.map({ message: 'Signed out successfully' });
 	}
 }
